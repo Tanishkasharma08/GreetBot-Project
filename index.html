@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreetBot - Friendly Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .msg {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .msg.user {
+            justify-content: flex-end;
+        }
+
+        .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .bot .icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .user .icon {
+            background: #4ade80;
+            order: 2;
+        }
+
+        .text {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
+        .bot .text {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user .text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+            order: 1;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+
+        .typing {
+            display: none;
+        }
+
+        .typing.active {
+            display: flex;
+        }
+
+        .typing .text {
+            padding: 15px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dots span {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .suggestions {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .suggestions::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .suggestions::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .suggest-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-right: 8px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .suggest-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        .input-area {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-box {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-box:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            font-size: 20px;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 GreetBot</h1>
+            <p>Your Friendly Greeting Assistant</p>
+            <div class="status">
+                <span class="dot"></span>
+                <span>Online</span>
+            </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="suggestions">
+            <button class="suggest-btn" onclick="send('Hello!')">👋 Hello</button>
+            <button class="suggest-btn" onclick="send('Good morning')">☀️ Good Morning</button>
+            <button class="suggest-btn" onclick="send('How are you?')">😊 How are you?</button>
+            <button class="suggest-btn" onclick="send('Good night')">🌙 Good Night</button>
+            <button class="suggest-btn" onclick="send('Thank you')">💙 Thank You</button>
+        </div>
+
+        <!-- Chat Box -->
+        <div class="chat-box" id="chatBox">
+            <div class="msg bot">
+                <div class="icon">🤖</div>
+                <div class="text">
+                    Hello! 👋 I'm GreetBot!
+                    
+I love greeting people and spreading positivity! Try saying hi, good morning, or ask how I'm doing! 😊
+                    <div class="timestamp" id="startTime"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <input 
+                type="text" 
+                class="input-box" 
+                id="userInput" 
+                placeholder="Type a message..."
+                onkeypress="checkKey(event)"
+            >
+            <button class="send-btn" onclick="sendMessage()">
+                ➤
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Set initial time
+        document.getElementById('startTime').textContent = getTime();
+
+        // Get current time
+        function getTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // Auto scroll to bottom
+        function scrollToBottom() {
+            const box = document.getElementById('chatBox');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // Add message to chat
+        function addMessage(text, type) {
+            const chatBox = document.getElementById('chatBox');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${type}`;
+            
+            const emoji = type === 'bot' ? '🤖' : '👤';
+            const time = getTime();
+            
+            msgDiv.innerHTML = `
+                <div class="icon">${emoji}</div>
+                <div class="text">
+                    ${text}
+                    <div class="timestamp">${time}</div>
+                </div>
+            `;
+            
+            chatBox.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        // Show typing indicator
+        function showTyping() {
+            const chatBox = document.getElementById('chatBox');
+            const typing = document.createElement('div');
+            typing.className = 'msg bot typing active';
+            typing.id = 'typing';
+            typing.innerHTML = `
+                <div class="icon">🤖</div>
+                <div class="text">
+                    <div class="dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            chatBox.appendChild(typing);
+            scrollToBottom();
+        }
+
+        // Hide typing indicator
+        function hideTyping() {
+            const typing = document.getElementById('typing');
+            if (typing) {
+                typing.remove();
+            }
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Show typing
+            showTyping();
+            
+            try {
+                const response = await fetch('http://localhost:5000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // Hide typing
+                hideTyping();
+                
+                // Add bot response
+                if (response.ok) {
+                    addMessage(data.response, 'bot');
+                } else {
+                    addMessage('Oops! Something went wrong 😅', 'bot');
+                }
+                
+            } catch (error) {
+                hideTyping();
+                addMessage('Cannot connect to server! Please make sure Python backend is running 🔌', 'bot');
+                console.error('Error:', error);
+            }
+        }
+
+        // Check Enter key
+        function checkKey(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Quick send
+        function send(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+
+        // Focus input on load
+        window.onload = function() {
+            document.getElementById('userInput').focus();
+        };
+    </script>
+</body>
+</html>
